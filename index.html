@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Letters & Poems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fcfbfa;
+            --card-bg: #ffffff;
+            --text-main: #2c2a29;
+            --text-muted: #6b6563;
+            --accent: #b85d4f;
+            --border: #f0eae6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.7;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 300;
+            letter-spacing: 0.02em;
+        }
+
+        .entry-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(44, 42, 41, 0.03);
+            transition: transform 0.2s ease;
+        }
+
+        .entry-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .entry-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .entry-content {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            white-space: pre-line;
+            color: #3a3735;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 600px) {
+            .entry-card {
+                padding: 25px;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>For You, Always</h1>
+            <p>A collection of letters and poems, written with love.</p>
+        </header>
+
+        <main>
+            <!-- EXAMPLE ENTRY 1 -->
+            article class="entry-card">
+                <div class="entry-meta">
+                    <span>Poem</span>
+                    <span>October 18, 2026</span>
+                </div>
+                <h2 class="entry-title">First Entry Title</h2>
+                <div class="entry-content">
+                    Replace this text with your poem or letter.
+                    Line breaks and formatting will stay just like this.
+                    
+                    Forever yours,
+                    Hugo
+                </div>
+            </article>
+        </main>
+
+        <footer>
+            Built with all my love ❤️
+        </footer>
+    </div>
+
+</body>
+</html>
