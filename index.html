@@ -97,7 +97,6 @@
             color: #3a3735;
         }
 
-        /* Admin / Upload Section Styles */
         .admin-section {
             text-align: center;
             margin-bottom: 40px;
@@ -222,12 +221,10 @@
             <p>A collection of letters and poems, written with love for you bunny butt.</p>
         </header>
 
-        <!-- Admin Mode Toggle Button -->
         <div class="admin-section">
             <button class="btn" onclick="toggleUploadPanel()">Admin Mode</button>
         </div>
 
-        <!-- Secure Upload Panel -->
         <div id="uploadPanel" class="upload-panel">
             <h3 id="panelHeading">Admin Login</h3>
             <div id="loginForm">
@@ -239,7 +236,11 @@
                     <label>Password</label>
                     <input type="password" id="passwordInput" class="form-control" placeholder="Enter password">
                 </div>
-                <button class="submit-btn" onclick="verifyLogin()">Authenticate</button>
+                <div class="form-group">
+                    <label>GitHub Personal Access Token</label>
+                    <input type="password" id="tokenInput" class="form-control" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <button class="submit-btn" onclick="verifyLogin()">Authenticate & Connect DB</button>
             </div>
 
             <div id="entryForm" style="display: none;">
@@ -251,12 +252,12 @@
                     <label>Content</label>
                     <textarea id="entryContent" class="form-control" placeholder="Write your words here..."></textarea>
                 </div>
-                <button class="submit-btn" onclick="saveEntry()">Upload Entry</button>
+                <button class="submit-btn" onclick="saveEntryToGitHub()">Publish Permanently</button>
             </div>
         </div>
 
         <main id="entriesContainer">
-            <!-- Dynamic entries will appear here -->
+            <!-- Loaded dynamically from poems.json -->
         </main>
 
         <footer>
@@ -265,10 +266,15 @@
     </div>
 
     <script>
-        // Track whether admin session is active
+        const REPO_OWNER = "Sogicek";
+        const REPO_NAME = "letters";
+        const FILE_PATH = "poems.json";
+        
+        let githubToken = "";
+        let currentEntries = [];
         let isAdminLoggedIn = false;
 
-        document.addEventListener('DOMContentLoaded', displayEntries);
+        document.addEventListener('DOMContentLoaded', loadPoemsFromDatabase);
 
         function toggleUploadPanel() {
             const panel = document.getElementById('uploadPanel');
@@ -278,19 +284,35 @@
         function verifyLogin() {
             const user = document.getElementById('usernameInput').value;
             const pass = document.getElementById('passwordInput').value;
+            const token = document.getElementById('tokenInput').value.trim();
 
-            if (user === 'Sogicek' && pass === '@Qxh3zbny1') {
+            if (user === 'Sogicek' && pass === '@Qxh3zbny1' && token) {
+                githubToken = token;
                 isAdminLoggedIn = true;
                 document.getElementById('panelHeading').innerText = 'Publish New Poem or Letter';
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('entryForm').style.display = 'block';
-                displayEntries(); // Refresh view to reveal delete buttons
+                displayEntries();
             } else {
-                alert('Incorrect credentials.');
+                alert('Incorrect credentials or missing GitHub token.');
             }
         }
 
-        function saveEntry() {
+        async function loadPoemsFromDatabase() {
+            try {
+                const response = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}?t=${new Date().getTime()}`);
+                if (response.ok) {
+                    currentEntries = await response.json();
+                } else {
+                    currentEntries = [];
+                }
+            } catch (err) {
+                currentEntries = [];
+            }
+            displayEntries();
+        }
+
+        async function saveEntryToGitHub() {
             const title = document.getElementById('entryTitle').value.trim();
             const content = document.getElementById('entryContent').value.trim();
 
@@ -309,40 +331,72 @@
                 date: timestamp
             };
 
-            let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
-            entries.unshift(newEntry);
-            localStorage.setItem('lovestory_entries', JSON.stringify(entries));
+            currentEntries.unshift(newEntry);
 
-            document.getElementById('entryTitle').value = '';
-            document.getElementById('entryContent').value = '';
-            document.getElementById('uploadPanel').style.display = 'none';
-
-            displayEntries();
+            await updateGitHubFile(`Add poem: ${title}`);
         }
 
-        function deleteEntry(index) {
-            if (confirm('Are you sure you want to delete this poem or letter?')) {
-                let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
-                entries.splice(index, 1);
-                localStorage.setItem('lovestory_entries', JSON.stringify(entries));
-                displayEntries();
+        async function deleteEntry(index) {
+            if (confirm('Are you sure you want to delete this poem or letter permanently?')) {
+                const removed = currentEntries.splice(index, 1);
+                await updateGitHubFile(`Delete poem: ${removed[0].title}`);
+            }
+        }
+
+        async function updateGitHubFile(commitMessage) {
+            const apiUri = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+
+            try {
+                // 1. Get current file SHA
+                const getRes = await fetch(apiUri, {
+                    headers: { "Authorization": `token ${githubToken}` }
+                });
+                const fileData = await getRes.json();
+                const fileSha = fileData.sha;
+
+                // 2. Encode new JSON content to Base64
+                const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentEntries, null, 2))));
+
+                // 3. Push update via GitHub API
+                const putRes = await fetch(apiUri, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${githubToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: commitMessage,
+                        content: updatedContent,
+                        sha: fileSha
+                    })
+                });
+
+                if (putRes.ok) {
+                    alert('Successfully published permanently to GitHub!');
+                    document.getElementById('entryTitle').value = '';
+                    document.getElementById('entryContent').value = '';
+                    document.getElementById('uploadPanel').style.display = 'none';
+                    
+                    // Wait 3 seconds for GitHub Pages to update, then reload
+                    setTimeout(loadPoemsFromDatabase, 3000);
+                } else {
+                    alert('Failed to update GitHub database. Check your token permissions.');
+                }
+            } catch (err) {
+                alert('An error occurred during sync.');
             }
         }
 
         function displayEntries() {
             const container = document.getElementById('entriesContainer');
-            let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
-
-            if (entries.length === 0) {
-                entries = [{
-                    title: "A Beginning",
-                    content: `The first words on this page are for you.\nA quiet space to keep everything I write, just for your eyes.\n\nForever yours,\nHugo`,
-                    date: "October 18, 2026, 06:00 PM"
-                }];
+            
+            if (currentEntries.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted);">No entries found yet.</p>`;
+                return;
             }
 
             let html = '';
-            entries.forEach((entry, index) => {
+            currentEntries.forEach((entry, index) => {
                 html += `
                     <article class="entry-card">
                         <div class="entry-meta">
