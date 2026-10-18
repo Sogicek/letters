@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Letters & Poems</title>
+    <title>For You, Always</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -64,7 +64,6 @@
             padding: 40px;
             margin-bottom: 30px;
             box-shadow: 0 4px 20px rgba(44, 42, 41, 0.03);
-            transition: transform 0.2s ease;
         }
 
         .entry-meta {
@@ -95,21 +94,104 @@
             color: #3a3735;
         }
 
+        /* Admin / Upload Section Styles */
+        .admin-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px dashed var(--border);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .upload-panel {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(44, 42, 41, 0.03);
+            text-align: left;
+        }
+
+        .upload-panel h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            height: 150px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .submit-btn {
+            background: var(--text-main);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+        }
+
         footer {
             text-align: center;
             margin-top: 60px;
             color: var(--text-muted);
             font-size: 0.85rem;
             letter-spacing: 0.05em;
-        }
-
-        @media (max-width: 600px) {
-            .entry-card {
-                padding: 25px;
-            }
-            header h1 {
-                font-size: 2rem;
-            }
         }
     </style>
 </head>
@@ -121,58 +203,41 @@
             <p>A collection of letters and poems, written with love.</p>
         </header>
 
-        <main>
-            <!-- EXAMPLE ENTRY 1 -->
-            <article class="entry-card">
-                <div class="entry-meta">
-                    <span>Poem</span>
-                    <span>October 20, 2026</span>
+        <!-- Hidden Upload Trigger -->
+        <div class="admin-section">
+            <button class="btn" onclick="toggleUploadPanel()">+ New Entry</button>
+        </div>
+
+        <!-- Secure Upload Panel -->
+        <div id="uploadPanel" class="upload-panel">
+            <h3>Publish New Poem or Letter</h3>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="usernameInput" class="form-control" placeholder="Enter username">
                 </div>
-                <h2 class="entry-title">5 Year</h2>
-                <div class="entry-content">
-                    RA thousand roads could call my name,
-a thousand souls could pass me by,
-yet every heartbeat stops and starts
-at just the thought of you and I.
-
-Not drawn by fleeting, shallow grace,
-nor empty wants that fade and die,
-but with the ancient, steady weight
-of Eden under quiet sky—
-like Adam looking down to find
-the very breath he'd lacked before,
-the piece that made his spirit whole,
-the half of him he loved the more.
-
-And even gods would leave the stars
-to watch you in the fading light,
-while silent angels lose their words
-before the wonder of our night.
-
-So I don't want to just love you,
-I want to learn everything about you—
-to hear every piece of your story,
-to know every corner you hide.
-To make you repeat my name
-until your voice breaks soft and low,
-and undress you like a secret page
-where only my hands get to go.
-To stare into your eyes and watch
-your body fold beneath my touch,
-to kiss your skin from breath to breath,
-and love you deep, and love you much—
-to lay you down so carefully,
-yet make you feel high, recklessly.
-
-Through every year a turning page,
-through every day a sacred verse,
-through all the winding paths we take,
-it’s you I choose, and choose, and choose.
-                    
-                    Forever yours,
-                    Hugo
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="passwordInput" class="form-control" placeholder="Enter password">
                 </div>
-            </article>
+                <button class="submit-btn" onclick="verifyLogin()">Authenticate</button>
+            </div>
+
+            <div id="entryForm" style="display: none;">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="entryTitle" class="form-control" placeholder="Poem or Letter Title">
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="entryContent" class="form-control" placeholder="Write your words here..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="saveEntry()">Upload Entry</button>
+            </div>
+        </div>
+
+        <main id="entriesContainer">
+            <!-- Dynamic entries will appear here -->
         </main>
 
         <footer>
@@ -180,5 +245,102 @@ it’s you I choose, and choose, and choose.
         </footer>
     </div>
 
+    <script>
+        // Load existing entries from browser local storage on startup
+        document.addEventListener('DOMContentLoaded', displayEntries);
+
+        function toggleUploadPanel() {
+            const panel = document.getElementById('uploadPanel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function verifyLogin() {
+            const user = document.getElementById('usernameInput').value;
+            const pass = document.getElementById('passwordInput').value;
+
+            if (user === 'Sogicek' && pass === '@Qxh3zbny1') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('entryForm').style.display = 'block';
+            } else {
+                alert('Incorrect credentials.');
+            }
+        }
+
+        function saveEntry() {
+            const title = document.getElementById('entryTitle').value.trim();
+            const content = document.getElementById('entryContent').value.trim();
+
+            if (!title || !content) {
+                alert('Please fill out both the title and content.');
+                return;
+            }
+
+            // Generate precise date and time stamp
+            const now = new Date();
+            const options = { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const timestamp = now.toLocaleDateString('en-US', options);
+
+            const newEntry = {
+                title: title,
+                content: content,
+                date: timestamp
+            };
+
+            // Pull saved entries from localStorage or start empty array
+            let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
+            entries.unshift(newEntry); // Add newest to the top
+            localStorage.setItem('lovestory_entries', JSON.stringify(entries));
+
+            // Reset form fields and hide panel
+            document.getElementById('entryTitle').value = '';
+            document.getElementById('entryContent').value = '';
+            document.getElementById('uploadPanel').style.display = 'none';
+            document.getElementById('entryForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('passwordInput').value = '';
+
+            displayEntries();
+        }
+
+        function displayEntries() {
+            const container = document.getElementById('entriesContainer');
+            let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
+
+            // Default fallback example if nothing uploaded yet
+            if (entries.length === 0) {
+                entries = [{
+                    title: "A Beginning",
+                    content: `The first words on this page are for you.\nA quiet space to keep everything I write, just for your eyes.\n\nForever yours,\nHugo`,
+                    date: "October 18, 2026, 06:00 PM"
+                }];
+            }
+
+            let html = '';
+            entries.forEach(entry => {
+                html += `
+                    <article class="entry-card">
+                        <div class="entry-meta">
+                            <span>Poem / Letter</span>
+                            <span>${entry.date}</span>
+                        </div>
+                        <h2 class="entry-title">${escapeHtml(entry.title)}</h2>
+                        <div class="entry-content">${escapeHtml(entry.content)}</div>
+                    </article>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Helper to prevent HTML injection errors
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
