@@ -13,6 +13,8 @@
             --text-muted: #6b6563;
             --accent: #b85d4f;
             --border: #f0eae6;
+            --danger-bg: #fdf2f1;
+            --danger-text: #a94442;
         }
 
         * {
@@ -64,6 +66,7 @@
             padding: 40px;
             margin-bottom: 30px;
             box-shadow: 0 4px 20px rgba(44, 42, 41, 0.03);
+            position: relative;
         }
 
         .entry-meta {
@@ -186,6 +189,22 @@
             background: var(--accent);
         }
 
+        .delete-btn {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+            border: 1px solid #f5c6cb;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: #f8d7da;
+        }
+
         footer {
             text-align: center;
             margin-top: 60px;
@@ -203,14 +222,14 @@
             <p>A collection of letters and poems, written with love for you bunny butt.</p>
         </header>
 
-        <!-- Hidden Upload Trigger -->
+        <!-- Admin Mode Toggle Button -->
         <div class="admin-section">
-            <button class="btn" onclick="toggleUploadPanel()">+ New Entry</button>
+            <button class="btn" onclick="toggleUploadPanel()">Admin Mode</button>
         </div>
 
         <!-- Secure Upload Panel -->
         <div id="uploadPanel" class="upload-panel">
-            <h3>Publish New Poem or Letter</h3>
+            <h3 id="panelHeading">Admin Login</h3>
             <div id="loginForm">
                 <div class="form-group">
                     <label>Username</label>
@@ -246,7 +265,9 @@
     </div>
 
     <script>
-        // Load existing entries from browser local storage on startup
+        // Track whether admin session is active
+        let isAdminLoggedIn = false;
+
         document.addEventListener('DOMContentLoaded', displayEntries);
 
         function toggleUploadPanel() {
@@ -259,8 +280,11 @@
             const pass = document.getElementById('passwordInput').value;
 
             if (user === 'Sogicek' && pass === '@Qxh3zbny1') {
+                isAdminLoggedIn = true;
+                document.getElementById('panelHeading').innerText = 'Publish New Poem or Letter';
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('entryForm').style.display = 'block';
+                displayEntries(); // Refresh view to reveal delete buttons
             } else {
                 alert('Incorrect credentials.');
             }
@@ -275,7 +299,6 @@
                 return;
             }
 
-            // Generate precise date and time stamp
             const now = new Date();
             const options = { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' };
             const timestamp = now.toLocaleDateString('en-US', options);
@@ -286,28 +309,30 @@
                 date: timestamp
             };
 
-            // Pull saved entries from localStorage or start empty array
             let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
-            entries.unshift(newEntry); // Add newest to the top
+            entries.unshift(newEntry);
             localStorage.setItem('lovestory_entries', JSON.stringify(entries));
 
-            // Reset form fields and hide panel
             document.getElementById('entryTitle').value = '';
             document.getElementById('entryContent').value = '';
             document.getElementById('uploadPanel').style.display = 'none';
-            document.getElementById('entryForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('usernameInput').value = '';
-            document.getElementById('passwordInput').value = '';
 
             displayEntries();
+        }
+
+        function deleteEntry(index) {
+            if (confirm('Are you sure you want to delete this poem or letter?')) {
+                let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
+                entries.splice(index, 1);
+                localStorage.setItem('lovestory_entries', JSON.stringify(entries));
+                displayEntries();
+            }
         }
 
         function displayEntries() {
             const container = document.getElementById('entriesContainer');
             let entries = JSON.parse(localStorage.getItem('lovestory_entries')) || [];
 
-            // Default fallback example if nothing uploaded yet
             if (entries.length === 0) {
                 entries = [{
                     title: "A Beginning",
@@ -317,7 +342,7 @@
             }
 
             let html = '';
-            entries.forEach(entry => {
+            entries.forEach((entry, index) => {
                 html += `
                     <article class="entry-card">
                         <div class="entry-meta">
@@ -326,13 +351,13 @@
                         </div>
                         <h2 class="entry-title">${escapeHtml(entry.title)}</h2>
                         <div class="entry-content">${escapeHtml(entry.content)}</div>
+                        ${isAdminLoggedIn ? `<button class="delete-btn" onclick="deleteEntry(${index})">Delete Entry</button>` : ''}
                     </article>
                 `;
             });
             container.innerHTML = html;
         }
 
-        // Helper to prevent HTML injection errors
         function escapeHtml(text) {
             return text
                 .replace(/&/g, "&amp;")
