@@ -236,11 +236,7 @@
                     <label>Password</label>
                     <input type="password" id="passwordInput" class="form-control" placeholder="Enter password">
                 </div>
-                <div class="form-group">
-                    <label>GitHub Personal Access Token</label>
-                    <input type="password" id="tokenInput" class="form-control" placeholder="ghp_xxxxxxxxxxxx">
-                </div>
-                <button class="submit-btn" onclick="verifyLogin()">Authenticate & Connect DB</button>
+                <button class="submit-btn" onclick="verifyLogin()">Authenticate</button>
             </div>
 
             <div id="entryForm" style="display: none;">
@@ -269,12 +265,14 @@
         const REPO_OWNER = "Sogicek";
         const REPO_NAME = "letters";
         const FILE_PATH = "poems.json";
+        const HARDCODED_TOKEN = "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";
         
-        let githubToken = "";
         let currentEntries = [];
         let isAdminLoggedIn = false;
 
-        document.addEventListener('DOMContentLoaded', loadPoemsFromDatabase);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPoemsFromDatabase();
+        });
 
         function toggleUploadPanel() {
             const panel = document.getElementById('uploadPanel');
@@ -284,17 +282,15 @@
         function verifyLogin() {
             const user = document.getElementById('usernameInput').value;
             const pass = document.getElementById('passwordInput').value;
-            const token = document.getElementById('tokenInput').value.trim();
 
-            if (user === 'Sogicek' && pass === '@Qxh3zbny1' && token) {
-                githubToken = token;
+            if (user === 'Sogicek' && pass === '@Qxh3zbny1') {
                 isAdminLoggedIn = true;
                 document.getElementById('panelHeading').innerText = 'Publish New Poem or Letter';
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('entryForm').style.display = 'block';
                 displayEntries();
             } else {
-                alert('Incorrect credentials or missing GitHub token.');
+                alert('Incorrect username or password.');
             }
         }
 
@@ -347,21 +343,18 @@
             const apiUri = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
             try {
-                // 1. Get current file SHA
                 const getRes = await fetch(apiUri, {
-                    headers: { "Authorization": `token ${githubToken}` }
+                    headers: { "Authorization": `token ${HARDCODED_TOKEN}` }
                 });
                 const fileData = await getRes.json();
                 const fileSha = fileData.sha;
 
-                // 2. Encode new JSON content to Base64
                 const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentEntries, null, 2))));
 
-                // 3. Push update via GitHub API
                 const putRes = await fetch(apiUri, {
                     method: "PUT",
                     headers: {
-                        "Authorization": `token ${githubToken}`,
+                        "Authorization": `token ${HARDCODED_TOKEN}`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
@@ -377,10 +370,9 @@
                     document.getElementById('entryContent').value = '';
                     document.getElementById('uploadPanel').style.display = 'none';
                     
-                    // Wait 3 seconds for GitHub Pages to update, then reload
                     setTimeout(loadPoemsFromDatabase, 3000);
                 } else {
-                    alert('Failed to update GitHub database. Check your token permissions.');
+                    alert('Failed to update GitHub database.');
                 }
             } catch (err) {
                 alert('An error occurred during sync.');
